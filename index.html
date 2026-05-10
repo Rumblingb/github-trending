@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Trending Today — See What's Hot on GitHub</title>
+<meta name="description" content="See the hottest trending repositories on GitHub. Filter by language and time range. Discover what developers are talking about today.">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --bg-card-hover: #252b33;
+  --border: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-link: #58a6ff;
+  --accent: #3fb950;
+  --accent-orange: #d29922;
+  --accent-red: #f85149;
+  --accent-purple: #bc8cff;
+  --star-color: #e3b341;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+/* Header */
+header {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; max-width: 960px; margin: 0 auto; padding: 16px 20px;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.logo-icon { width: 32px; height: 32px; }
+.logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.logo-text span { color: var(--accent); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 6px; font-size: 14px;
+  font-weight: 500; cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-primary);
+  transition: all 0.2s; text-decoration: none; white-space: nowrap;
+}
+.btn:hover { background: var(--bg-card-hover); border-color: #484f58; }
+.btn-primary { background: #238636; border-color: #2ea043; color: #fff; }
+.btn-primary:hover { background: #2ea043; }
+.btn-outline { background: transparent; border-color: var(--border); }
+.btn-icon { padding: 8px; line-height: 1; }
+
+/* Featured Section */
+.featured {
+  background: linear-gradient(135deg, #1a2332 0%, #161b22 50%, #1a1a2e 100%);
+  border: 1px solid #2d3a4a;
+  border-radius: 12px;
+  margin: 24px auto;
+  padding: 24px 28px;
+  max-width: 960px;
+}
+.featured h2 {
+  font-size: 16px; font-weight: 600; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.featured h2 svg { flex-shrink: 0; }
+.featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.featured-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: var(--text-primary);
+  display: block;
+}
+.featured-card:hover { background: var(--bg-card-hover); border-color: #484f58; transform: translateY(-1px); }
+.featured-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--accent-purple); }
+.featured-card p { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4; }
+.featured-card .badge {
+  display: inline-block; font-size: 11px; padding: 2px 8px;
+  border-radius: 999px; background: rgba(188,140,255,0.15); color: var(--accent-purple);
+  font-weight: 500;
+}
+
+/* Controls */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin: 20px auto; align-items: center;
+  max-width: 960px;
+}
+.control-group { display: flex; align-items: center; gap: 8px; }
+.control-group label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+select {
+  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-primary); font-size: 13px;
+  cursor: pointer; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 30px; min-width: 120px;
+}
+select:focus { border-color: var(--text-link); }
+.controls .spacer { flex: 1; }
+.status-text { font-size: 13px; color: var(--text-secondary); }
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid var(--border); border-top-color: var(--text-link);
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Repo List */
+.repo-list { max-width: 960px; margin: 0 auto; }
+.repo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+.repo-card:hover { border-color: #484f58; background: var(--bg-card-hover); }
+.repo-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.repo-name {
+  font-size: 18px; font-weight: 600; color: var(--text-link);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+}
+.repo-name:hover { text-decoration: underline; }
+.repo-rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  background: var(--bg-primary); flex-shrink: 0;
+}
+.repo-stars {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600; white-space: nowrap;
+  color: var(--star-color);
+}
+.repo-stars svg { flex-shrink: 0; }
+.repo-desc {
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 8px; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.repo-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+  margin-top: 12px; font-size: 13px; color: var(--text-secondary);
+}
+.repo-lang {
+  display: flex; align-items: center; gap: 6px;
+}
+.lang-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
+}
+.today-stars {
+  display: flex; align-items: center; gap: 4px; color: var(--accent-orange);
+}
+.today-stars svg { flex-shrink: 0; }
+.repo-forks { display: flex; align-items: center; gap: 4px; }
+.repo-forks svg { flex-shrink: 0; }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 40px; padding: 24px 0; text-align: center;
+}
+footer p { font-size: 13px; color: var(--text-secondary); }
+footer a { color: var(--text-link); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* Error */
+.error-msg {
+  background: rgba(248,81,73,0.1);
+  border: 1px solid rgba(248,81,73,0.3);
+  border-radius: 8px; padding: 16px 20px; font-size: 14px;
+  color: var(--accent-red); margin-bottom: 12px;
+}
+
+/* Empty state */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state svg { margin-bottom: 16px; opacity: 0.4; }
+.empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.empty-state p { color: var(--text-secondary); font-size: 14px; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .header-inner { flex-wrap: wrap; gap: 12px; }
+  .controls { flex-direction: column; align-items: stretch; }
+  .control-group { flex-wrap: wrap; }
+  .repo-header { flex-direction: column; }
+  .repo-meta { gap: 10px; }
+  .featured-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+      </svg>
+      <span class="logo-text">GitHub <span>Trending</span></span>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-icon" id="refreshBtn" title="Refresh" aria-label="Refresh trending repos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="padding-bottom:20px;">
+
+  <!-- Featured MCP Section -->
+  <div class="featured">
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bc8cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      ⚡ Featured — Our MCP Servers
+    </h2>
+    <div class="featured-grid">
+      <a class="featured-card" href="https://buy.stripe.com/3cs3dbcVh6oX9AccMN" target="_blank" rel="noopener">
+        <h3>🗄️ Filesystem MCP Server</h3>
+        <p>Secure file operations — read, write, search, and manage files through MCP. Sandboxed access control.</p>
+        <span class="badge">Get Access →</span>
+      </a>
+      <a class="featured-card" href="https://buy.stripe.com/7sI03tdh1bqX2KIaEE" target="_blank" rel="noopener">
+        <h3>🌐 Web MCP Server</h3>
+        <p>Browse the web, scrape content, and fetch APIs through MCP. Built-in rate limiting and caching.</p>
+        <span class="badge">Get Access →</span>
+      </a>
+      <a class="featured-card" href="https://buy.stripe.com/5kA02VcVh7AX0CQ7sC" target="_blank" rel="noopener">
+        <h3>🧠 Memory MCP Server</h3>
+        <p>Persistent knowledge graph with semantic memory. Store, retrieve, and reason over structured data.</p>
+        <span class="badge">Get Access →</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="control-group">
+      <label for="langFilter">Language</label>
+      <select id="langFilter">
+        <option value="">All</option>
+        <option value="JavaScript">JavaScript</option>
+        <option value="TypeScript">TypeScript</option>
+        <option value="Python">Python</option>
+        <option value="Rust">Rust</option>
+        <option value="Go">Go</option>
+        <option value="Java">Java</option>
+        <option value="Kotlin">Kotlin</option>
+        <option value="Ruby">Ruby</option>
+        <option value="C">C</option>
+        <option value="C++">C++</option>
+        <option value="C#">C#</option>
+        <option value="Swift">Swift</option>
+        <option value="Shell">Shell</option>
+        <option value="PHP">PHP</option>
+        <option value="Lua">Lua</option>
+        <option value="Zig">Zig</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="rangeFilter">Range</label>
+      <select id="rangeFilter">
+        <option value="daily">Today</option>
+        <option value="weekly">This week</option>
+        <option value="monthly">This month</option>
+      </select>
+    </div>
+    <div class="spacer"></div>
+    <span class="status-text" id="statusText">Ready</span>
+  </div>
+
+  <!-- Repo List -->
+  <div class="repo-list" id="repoList">
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <h3>Loading trending repositories...</h3>
+      <p>Fetching the latest from GitHub</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>Data sourced from <a href="https://github.com/trending" target="_blank" rel="noopener">GitHub Trending</a> via the unofficial API. Built with ❤️ by <a href="https://jacks-toolbox.com" target="_blank" rel="noopener">jack's toolbox</a>.</p>
+  </div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  const DOM = {
+    repoList: document.getElementById('repoList'),
+    statusText: document.getElementById('statusText'),
+    langFilter: document.getElementById('langFilter'),
+    rangeFilter: document.getElementById('rangeFilter'),
+    refreshBtn: document.getElementById('refreshBtn')
+  };
+
+  // Language color map (GitHub-like)
+  const LANG_COLORS = {
+    JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572A5',
+    Rust: '#dea584', Go: '#00ADD8', Java: '#b07219', Kotlin: '#A97BFF',
+    Ruby: '#701516', 'C++': '#f34b7d', C: '#555555', 'C#': '#178600',
+    Swift: '#ffac45', Shell: '#89e051', PHP: '#4F5D95', Lua: '#000080',
+    Zig: '#ec915c', HTML: '#e34c26', CSS: '#563d7c', Scala: '#c22d40',
+    Dart: '#00B4AB', Elixir: '#6e4a7e', Haskell: '#5e5086', R: '#198ce7',
+    Objective: '#438eff', Vue: '#41b883', Svelte: '#ff3e00'
+  };
+
+  // State
+  let repos = [];
+  let filteredRepos = [];
+  let isLoading = false;
+
+  // ── API ──
+  async function fetchTrending(range) {
+    const apiUrl = 'https://github-trending-api.now.sh/api/repositories';
+    const url = range ? apiUrl + '?since=' + range : apiUrl;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('API returned status ' + res.status);
+    return await res.json();
+  }
+
+  // ── Render ──
+  function render() {
+    const lang = DOM.langFilter.value;
+    const list = DOM.repoList;
+
+    filteredRepos = lang
+      ? repos.filter(r => (r.language || '').toLowerCase() === lang.toLowerCase())
+      : repos;
+
+    if (isLoading) {
+      list.innerHTML =
+        '<div class="empty-state"><div class="spinner" style="width:32px;height:32px;border-width:3px;margin:0 auto 16px;"></div><h3>Loading trending repositories...</h3><p>Fetching the latest from GitHub</p></div>';
+      return;
+    }
+
+    if (repos.length === 0 && !isLoading) {
+      list.innerHTML =
+        '<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><h3>No repositories found</h3><p>Try a different filter or refresh.</p></div>';
+      return;
+    }
+
+    if (filteredRepos.length === 0) {
+      list.innerHTML =
+        '<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><h3>No repos match "' + html(lang) + '"</h3><p>Try selecting a different language.</p></div>';
+      return;
+    }
+
+    let html = '';
+    filteredRepos.forEach(function(repo, i) {
+      const rank = repos.indexOf(repo) + 1;
+      const langColor = LANG_COLORS[repo.language] || '#8b949e';
+      const stars = repo.stars || repo.starCount || 0;
+      const forks = repo.forks || repo.forkCount || 0;
+      const todayStars = repo.currentPeriodStars || repo.todayStars || 0;
+      const desc = repo.description || 'No description provided.';
+      const fullName = repo.author + '/' + repo.name;
+      const url = repo.url || 'https://github.com/' + fullName;
+      const language = repo.language || '';
+
+      html += '<div class="repo-card">';
+      html += '<div class="repo-header">';
+      html += '<div>';
+      html += '<span class="repo-rank">' + rank + '</span> ';
+      html += '<a class="repo-name" href="' + html(url) + '" target="_blank" rel="noopener">' + html(fullName) + '</a>';
+      html += '</div>';
+      html += '<div class="repo-stars">';
+      html += '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>';
+      html += formatNumber(stars);
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="repo-desc">' + html(desc) + '</div>';
+      html += '<div class="repo-meta">';
+      if (language) {
+        html += '<span class="repo-lang"><span class="lang-dot" style="background:' + langColor + '"></span>' + html(language) + '</span>';
+      }
+      if (todayStars > 0) {
+        html += '<span class="today-stars">';
+        html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>';
+        html += formatNumber(todayStars) + ' stars today';
+        html += '</span>';
+      }
+      html += '<span class="repo-forks">';
+      html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zM3 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zm6.75.75a.75.75 0 100-1.5.75.75 0 000 1.5zm-3 8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path></svg>';
+      html += formatNumber(forks);
+      html += '</span>';
+      html += '</div>';
+      html += '</div>';
+    });
+
+    list.innerHTML = html;
+  }
+
+  // ── Load ──
+  async function load() {
+    if (isLoading) return;
+    const range = DOM.rangeFilter.value;
+    setStatus('Fetching trending ' + (range === 'daily' ? 'today' : range === 'weekly' ? 'this week' : 'this month') + '...', true);
+    isLoading = true;
+    render();
+
+    try {
+      repos = await fetchTrending(range);
+      isLoading = false;
+      setStatus('Loaded ' + repos.length + ' repositories', false);
+      render();
+    } catch (err) {
+      isLoading = false;
+      repos = [];
+      setStatus('Error: ' + err.message, false);
+      DOM.repoList.innerHTML =
+        '<div class="error-msg">⚠️ Failed to load trending repositories: ' + html(err.message) + '<br><br><button class="btn" onclick="location.reload()">Try Again</button></div>';
+    }
+  }
+
+  // ── Helpers ──
+  function setStatus(msg, loading) {
+    DOM.statusText.innerHTML = loading ? '<span class="spinner" style="margin-right:6px"></span>' + html(msg) : html(msg);
+  }
+
+  function formatNumber(n) {
+    if (!n) return '0';
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+  }
+
+  function html(s) {
+    if (s == null) return '';
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Events ──
+  DOM.langFilter.addEventListener('change', render);
+  DOM.rangeFilter.addEventListener('change', load);
+  DOM.refreshBtn.addEventListener('click', load);
+
+  // ── Init ──
+  load();
+
+})();
+</script>
+</body>
+</html>
